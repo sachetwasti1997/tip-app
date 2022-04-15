@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sachet.tipapp.ui.theme.TipAppTheme
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApp {
                 var counter by remember {
-                    mutableStateOf(0)
+                    mutableStateOf(0.0f)
                 }
                 Column() {
                     TopHeader(counter)
@@ -67,7 +69,9 @@ fun MyApp(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun TopHeader(counter:Int){
+fun TopHeader(counter:Float){
+    val df = DecimalFormat("#.##")
+    df.roundingMode = RoundingMode.UP
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,15 +96,17 @@ fun TopHeader(counter:Int){
                     fontSize = 30.sp,
                     fontWeight = FontWeight.ExtraBold
                 ),
-                text = "$$counter"
+                text = "$${df.format(counter)}"
             )
         }
     }
 }
 
 @Composable
-fun BodyCalculator(tpp: (Int) -> Unit){
+fun BodyCalculator(tpp: (Float) -> Unit){
     val context = LocalContext.current
+    val df = DecimalFormat("#.##")
+    df.roundingMode = RoundingMode.UP
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,7 +121,7 @@ fun BodyCalculator(tpp: (Int) -> Unit){
             mutableStateOf(1)
         }
         var tipAmount by remember {
-            mutableStateOf(0)
+            mutableStateOf(0.0f)
         }
         Column(
             modifier = Modifier
@@ -142,12 +148,12 @@ fun BodyCalculator(tpp: (Int) -> Unit){
                     tpp(value)
                 }
             }
-            TipText(tipAmount = tipAmount)
+            TipText(tipAmount = df.format(tipAmount).toFloat())
             ChangeTip(){
-                tipAmount = (it * Integer.parseInt(totalAmount.text) * 0.01).toInt()
+                tipAmount = (it.toInt() * Integer.parseInt(totalAmount.text) * 0.01).toFloat()
                 if (totalAmount.text != "") {
                     val value = (Integer.parseInt(totalAmount.text) + tipAmount) / nopeople
-                    tpp(value)
+                    tpp(df.format(value).toFloat())
                 }
             }
         }
@@ -221,7 +227,7 @@ fun NumberPeopleInput(nopeople:Int, changeCount: (Int) -> Unit){
 }
 
 @Composable
-fun TipText(tipAmount: Int){
+fun TipText(tipAmount: Float){
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -283,7 +289,7 @@ fun ChangeTip(setTipAmount: (Float) -> Unit){
 fun DefaultPreview() {
     MyApp {
         Column() {
-            TopHeader(0)
+            TopHeader(0.0f)
             BodyCalculator(){
                 Log.d("Preview", "DefaultPreview: Total Per Person: $it")
             }
